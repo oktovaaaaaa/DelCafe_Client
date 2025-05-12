@@ -12,21 +12,19 @@ class RiwayatAdminController extends Controller
     {
         $search = $request->input('search');
 
-        $query = Pesanan::query()->where('status', '!=', 'dibatalkan'); // Tambahkan ini
+        $query = Pesanan::query()->where('status', '!=', 'dibatalkan');
 
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'LIKE', '%' . $search . '%');
             })
-            ->orWhere('daftar_menu', 'LIKE', '%' . $search . '%');
+                ->orWhere('daftar_menu', 'LIKE', '%' . $search . '%');
         }
 
         $semuaRiwayatPesanan = $query->with('user')->get();
 
         // Pastikan laporan harian selalu dihitung saat halaman dimuat
-        if (!session('laporanHarian')) {
-            $this->hitungLaporanHarian();
-        }
+        $this->hitungLaporanHarian($semuaRiwayatPesanan); // Pass $semuaRiwayatPesanan
 
         $laporanHarian = session('laporanHarian');
 
@@ -50,7 +48,8 @@ class RiwayatAdminController extends Controller
         $pesanan->save();
 
         // Hitung Ulang Laporan Harian
-        $this->hitungLaporanHarian();
+        $semuaRiwayatPesanan = Pesanan::where('status', '!=', 'dibatalkan')->with('user')->get();
+        $this->hitungLaporanHarian($semuaRiwayatPesanan); // Pass $semuaRiwayatPesanan
 
         // Redirect ke halaman riwayat.tampilan setelah berhasil
         return redirect()->route('riwayat.tampilan')->with('success', 'Status pesanan berhasil diubah menjadi ' . $action);
@@ -59,14 +58,28 @@ class RiwayatAdminController extends Controller
     public function hapusHarian(Request $request)
     {
         $selectedTangal = $request->input('selected_tanggal');
+        $search = $request->input('search'); // Ambil keyword pencarian
 
         if ($selectedTangal) {
             foreach ($selectedTangal as $tanggal) {
-                Pesanan::whereDate('created_at', $tanggal)->delete();
+                // Bangun query dasar
+                $query = Pesanan::whereDate('created_at', $tanggal);
+
+                // Tambahkan kondisi pencarian jika ada
+                if ($search) {
+                    $query->whereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'LIKE', '%' . $search . '%');
+                    })
+                        ->orWhere('daftar_menu', 'LIKE', '%' . $search . '%');
+                }
+
+                // Hapus pesanan yang memenuhi kriteria
+                $query->delete();
             }
 
             // Hitung Ulang Laporan Harian Setelah Penghapusan
-            $this->hitungLaporanHarian();
+            $semuaRiwayatPesanan = Pesanan::where('status', '!=', 'dibatalkan')->with('user')->get();
+            $this->hitungLaporanHarian($semuaRiwayatPesanan); // Pass $semuaRiwayatPesanan
 
             return redirect()->back()->with('success', 'Riwayat pesanan harian yang dipilih berhasil dihapus.');
         } else {
@@ -74,14 +87,12 @@ class RiwayatAdminController extends Controller
         }
     }
 
-        private function hitungLaporanHarian()
+    private function hitungLaporanHarian($semuaRiwayatPesanan)
     {
-        $semuaRiwayatPesanan = Pesanan::where('status', '!=', 'dibatalkan')->with('user')->get(); // Ambil data terbaru dan filter
-
         $laporanHarian = [];
 
-        foreach($semuaRiwayatPesanan as $pesanan) {
-            if($pesanan->status == 'berhasil') {
+        foreach ($semuaRiwayatPesanan as $pesanan) {
+            if ($pesanan->status == 'berhasil') {
                 $tanggal = $pesanan->created_at->format('Y-m-d');
                 $daftarMenu = json_decode($pesanan->daftar_menu, true);
 
@@ -103,7 +114,7 @@ class RiwayatAdminController extends Controller
             }
         }
 
-        // Simpan laporan harian ke session (atau cara lain yang sesuai)
+        // Simpan laporan harian ke session
         session(['laporanHarian' => $laporanHarian]);
     }
 }

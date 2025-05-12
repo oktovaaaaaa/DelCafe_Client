@@ -1,3 +1,5 @@
+{{-- resources/views/riwayat/tampilan.blade.php --}}
+
 @extends('layouts.mainadmin')
 
 @section('contents')
@@ -11,7 +13,7 @@
         <div class="mt-4">
             <form action="{{ route('riwayat.tampilan') }}" method="GET" class="d-flex justify-content-center">
                 <input type="text" name="search" class="form-control me-2" style="max-width: 300px;"
-                    placeholder="Cari riwayat pemesanan..." value="{{ request('search') }}">
+                       placeholder="Cari riwayat pemesanan..." value="{{ request('search') }}">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Cari</button>
             </form>
         </div>
@@ -71,6 +73,8 @@
                                         <span class="badge bg-success">{{ ucfirst($pesanan->status) }}</span>
                                     @elseif($pesanan->status == 'ditolak')
                                         <span class="badge bg-danger">{{ ucfirst($pesanan->status) }}</span>
+                                    @elseif($pesanan->status == 'dibatalkan')
+                                        <span class="badge bg-secondary">{{ ucfirst($pesanan->status) }}</span>
                                     @else
                                         {{ ucfirst($pesanan->status) }}
                                     @endif
@@ -99,6 +103,10 @@
             <form action="{{ route('riwayat.hapusharian') }}" method="POST">
                 @csrf
                 @method('DELETE')
+
+                @if(request('search'))
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                @endif
 
                 @if(isset($laporanHarian) && count($laporanHarian) > 0)
                     @foreach ($laporanHarian as $tanggal => $dataMenu)
