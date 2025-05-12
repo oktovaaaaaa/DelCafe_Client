@@ -131,7 +131,27 @@ class UserController extends Controller
         return view('userr.riwayat_pesanan', compact('riwayatPesanan'));
     }
 
-    public function hapusRiwayatPesanan($id)
+    public function batalkanPesanan($id)
+    {
+        $pesanan = Pesanan::findOrFail($id);
+
+        // Pastikan hanya user yang punya pesanan yang bisa membatalkan
+        if ($pesanan->user_id != Auth::id()) {
+            return redirect()->route('userr.riwayatPesanan')->with('error', 'Anda tidak memiliki izin untuk membatalkan pesanan ini.');
+        }
+
+        // Pastikan pesanan masih dalam status "menunggu"
+        if ($pesanan->status != 'menunggu') {
+            return redirect()->route('userr.riwayatPesanan')->with('error', 'Pesanan ini tidak dapat dibatalkan karena statusnya sudah berubah.');
+        }
+
+        $pesanan->status = 'dibatalkan';
+        $pesanan->save();
+
+        return redirect()->route('userr.riwayatPesanan')->with('success', 'Pesanan berhasil dibatalkan.');
+    }
+
+        public function hapusRiwayatPesanan($id)
     {
         $pesanan = Pesanan::findOrFail($id);
 
@@ -143,7 +163,7 @@ class UserController extends Controller
         $pesanan->delete();
         return redirect()->route('userr.riwayatPesanan')->with('success', 'Pesanan berhasil dihapus.');
     }
-
+    
     public function prosesPembayaranKeranjangWA(Request $request)
     {
         // Validasi request

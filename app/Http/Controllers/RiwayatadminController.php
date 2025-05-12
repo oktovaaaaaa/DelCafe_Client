@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\Pesanan;
 use App\Models\User;
 
-class RiwayatadminController extends Controller
+class RiwayatAdminController extends Controller
 {
     public function index(Request $request)
     {
         $search = $request->input('search');
 
-        $query = Pesanan::query();
+        $query = Pesanan::query()->where('status', '!=', 'dibatalkan'); // Tambahkan ini
 
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
@@ -74,9 +74,9 @@ class RiwayatadminController extends Controller
         }
     }
 
-    private function hitungLaporanHarian()
+        private function hitungLaporanHarian()
     {
-        $semuaRiwayatPesanan = Pesanan::with('user')->get(); // Ambil data terbaru
+        $semuaRiwayatPesanan = Pesanan::where('status', '!=', 'dibatalkan')->with('user')->get(); // Ambil data terbaru dan filter
 
         $laporanHarian = [];
 

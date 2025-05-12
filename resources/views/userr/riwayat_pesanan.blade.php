@@ -5,16 +5,16 @@
     <div class="container section-title pt-5 mt-5" data-aos="fade-up">
         <br>
         <h2>Riwayat</h2>
-    <br>
-    @if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"
-            aria-label="Close"></button>
-    </div>
-@endif
+        <br>
 
-        @if(session('error'))
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
             <div class="alert alert-danger">
                 {{ session('error') }}
             </div>
@@ -58,18 +58,30 @@
                                         <span class="badge bg-success">{{ ucfirst($pesanan->status) }}</span>
                                     @elseif($pesanan->status == 'ditolak')
                                         <span class="badge bg-danger">{{ ucfirst($pesanan->status) }}</span>
+                                    @elseif($pesanan->status == 'dibatalkan')
+                                        <span class="badge bg-secondary">{{ ucfirst($pesanan->status) }}</span>
                                     @else
                                         {{ ucfirst($pesanan->status) }}
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <form action="{{ route('userr.hapusRiwayatPesanan', $pesanan->id) }}" method="POST">
+                                    <form action="{{ route('userr.hapusRiwayatPesanan', $pesanan->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus pesanan ini?')">
                                             <i class="fa fa-trash"></i> Hapus
                                         </button>
                                     </form>
+
+                                    @if($pesanan->status == 'menunggu')
+                                        <form action="{{ route('userr.batalkanPesanan', $pesanan->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">
+                                                <i class="fa fa-times"></i> Batalkan
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -77,17 +89,16 @@
                 </table>
             </div>
         @else
-        <div class="container d-flex justify-content-center align-items-center" style="min-height: 400px;">
-            <div class="text-center">
-                <i class="fas fa-history fa-3x text-secondary mb-4"></i>
-                <p class="text-muted">Tidak ada riwayat pemesanan</p>
-                <a href="{{ route('userr.menu') }}" class="btn btn-secondary mt-3">
-                    <i class="fa fa-arrow-left"></i> Pesan sekarang !
-                </a>
-            </div>
-        </div>
-        @endif
+            <div class="container d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                <div class="text-center">
+                    <i class="fas fa-history fa-3x text-secondary mb-4"></i>
+                    <p class="text-muted">Tidak ada riwayat pemesanan</p>
+                    <a href="{{ route('userr.menu') }}" class="btn btn-secondary mt-3">
+                        <i class="fa fa-arrow-left"></i> Pesan sekarang !
+                    </a>
                 </div>
+            </div>
+        @endif
+    </div>
 
-       @include('layouts.footer')
-
+    @include('layouts.footer')

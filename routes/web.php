@@ -56,9 +56,20 @@ Route::middleware(['auth', 'user.role'])->group(function () {
     Route::post('/keranjang/proses-pembayaran', [UserController::class, 'prosesPembayaranKeranjang'])->name('userr.prosesPembayaranKeranjang');
     Route::post('/menu/proses-pembayaran', [UserController::class, 'prosesPembayaran'])->name('userr.prosesPembayaran'); // Route untuk card menu
     Route::get('/riwayat-pesanan', [UserController::class, 'lihatRiwayatPesanan'])->name('userr.riwayatPesanan');
+
+
+Route::get('/menu', [UserController::class, 'daftarMenu'])->name('userr.menu');
+// ... route lainnya ...
+Route::patch('/riwayat-pesanan/{id}/batalkan', [UserController::class, 'batalkanPesanan'])->name('userr.batalkanPesanan');
+Route::delete('/riwayat-pesanan/{id}', [UserController::class, 'hapusRiwayatPesanan'])->name('userr.hapusRiwayatPesanan');
+
+
+
     Route::delete('/riwayat-pesanan/{id}/hapus', [UserController::class, 'hapusRiwayatPesanan'])->name('userr.hapusRiwayatPesanan');
     Route::post('/proses-pembayaran-wa', [UserController::class, 'prosesPembayaranKeranjangWA'])->name('userr.prosesPembayaranKeranjangWA');
 });Route::post('/proses-pembayaran-menu', [UserController::class, 'prosesPembayaranMenu'])->name('userr.prosesPembayaranMenu');
+
+
 
 
 
